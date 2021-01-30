@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Post;
 use App\User;
 use App\Comment;
+use App\Reply;
 use Illuminate\Support\Carbon;
 class PostController extends Controller
 {
@@ -71,28 +72,6 @@ class PostController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 
     public function addFavirote(Request $request){
         $id = Auth::user()->id;
@@ -113,6 +92,7 @@ class PostController extends Controller
     public function loadComment(Request $request){
         $post = Post::find($request->postId);
         $comments = array();
+        $reply = array();
         foreach($post->comments as $value){
             $comments[] = [
                 'id' => $value->id,
@@ -120,8 +100,15 @@ class PostController extends Controller
                 'user' => $value->user->name,
                 'time' => $value->created_at->diffForHumans()
             ];
+
+            $comment = Comment::find($value->id);
+            $reply[$value->id][] = [
+                'reply' => 'Reply Hi'
+            ]; 
         }
-        return response()->json(['comments'=>$comments,'totalComments'=>$post->comments->count(),'totalLikes'=>$post->like]);
+        
+
+        return response()->json(['comments'=>$comments,'reply'=>$reply,'totalComments'=>$post->comments->count(),'totalLikes'=>$post->like]);
         
     }
     public function addLike(Request $request){
@@ -130,16 +117,18 @@ class PostController extends Controller
             $newLike = $post->like + 1;
             $post->update(['like'=>$newLike]);
             return $post->like;
-        }else{
-            $newLike = $post->like;
-            $post->update(['like'=>$newLike]);
-            return $post->like;
         }
     }
 
     public function addReply(Request $request){
         $id = $request->commentId;
-        $reply = $request->reply;
-        return $reply;
+        $replyText = $request->reply;
+        
+        $comment = Comment::find($id);
+        $reply = new Reply;
+        $reply->user_id = Auth::user()->id;
+        $reply->reply = $replyText;
+        $comment->replies()->save($reply);    
+        
     }
 }

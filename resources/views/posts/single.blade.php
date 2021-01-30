@@ -50,7 +50,7 @@
                   var time = response['comments'][i]['time'];
                   box += '<div class="commented-section mt-2">';
                   box += '<div class="d-flex flex-row align-items-center commented-user">';
-                  box += '<h5 class="mr-2">'+user+'</h5></h5><span class="dot mb-1">';
+                  box += '<h5 class="mr-2">'+user+'</h5><span class="dot mb-1">';
                   box += '</span><span class="mb-1 ml-2 time" data-time="2019-12-25 00:00:00">'+time+'</span>';
                   box += '</div><div class="comment-text-sm"><span>'+comment+'</span></div>';
                   box += '<div class="reply-section">';
@@ -60,8 +60,12 @@
                   box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';
                   box += '<h6 class="ml-2 mt-1" class="reply-btn">Reply</h6>';
                   box += '</div></div></div><div class="d-flex flex-row"><input id="reply'+id+'" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply">';
-                  box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn" data-id="'+id+'">Reply</button></div>';
-              }
+                  box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn" data-id="'+id+'">Reply</button>';
+                  box +=  '</div>';
+                  box += '<div class="reply-section mt-2">';
+                  box += '<h6 class="mr-2 text-danger">'+response.reply[12][0]+'</h6>';
+                  box += '</div>';
+            }
               $('#comment-box').html(box);
               $('#totalComments').text(response.totalComments +' Comments');            
               $('#totalLikes').text(response.totalLikes +' Likes');            
@@ -115,7 +119,8 @@ $(document).on('click','#send-reply-btn',function(){
         url:"{{ route('posts.comment.reply') }}",
         data:{commentId:i,reply:reply,_token:_token},
         success:function(response) {
-        alert(response);         
+        $('#reply'+i).val(''); 
+       // swal("Thank You!", "You clicked the button!", "success");      
      }
   });
     
