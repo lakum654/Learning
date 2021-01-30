@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Post;
 use App\User;
 use App\Comment;
+use Illuminate\Support\Carbon;
 class PostController extends Controller
 {
     /**
@@ -16,7 +17,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        $posts = Post::get();
+        return view('posts.index',compact('posts'));
     }
 
     /**
@@ -105,6 +107,33 @@ class PostController extends Controller
        $comment->user_id = Auth::user()->id;
        $comment->comment = $request->comment;
        $post->comments()->save($comment);
-      return response()->json(['comments'=>$post->comments]);
+      //return response()->json(['comments'=>$post->comments]);
+    }
+
+    public function loadComment(Request $request){
+        $post = Post::find($request->postId);
+        $comments = array();
+        foreach($post->comments as $value){
+            $comments[] = [
+                'id' => $value->id,
+                'comment' => $value->comment,
+                'user' => $value->user->name,
+                'time' => $value->created_at->diffForHumans()
+            ];
+        }
+        return response()->json(['comments'=>$comments,'totalComments'=>$post->comments->count(),'totalLikes'=>$post->like]);
+        
+    }
+    public function addLike(Request $request){
+        $post = Post::find($request->postId);
+        if($request->actionType == 'like'){
+            $newLike = $post->like + 1;
+            $post->update(['like'=>$newLike]);
+            return $post->like;
+        }else{
+            $newLike = $post->like;
+            $post->update(['like'=>$newLike]);
+            return $post->like;
+        }
     }
 }

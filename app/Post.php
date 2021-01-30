@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Post extends Model
 {
     protected $softDelete = true;
-    protected $fillable = ['title','desc','user_id'];
+    protected $fillable = ['title','desc','user_id','like'];
 
     public function user(){
         return $this->belongsTo(User::class);
