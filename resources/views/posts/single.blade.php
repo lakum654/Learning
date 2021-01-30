@@ -44,6 +44,7 @@
               len = response['comments'].length;
               var box = '';
               for(var i=0; i<len; i++){
+                  var id = response['comments'][i]['id'];
                   var comment = response['comments'][i]['comment'];
                   var user = response['comments'][i]['user'];
                   var time = response['comments'][i]['time'];
@@ -58,7 +59,8 @@
                   box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
                   box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';
                   box += '<h6 class="ml-2 mt-1" class="reply-btn">Reply</h6>';
-                  box += '</div></div></div>';
+                  box += '</div></div></div><div class="d-flex flex-row"><input id="reply'+id+'" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply">';
+                  box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn" data-id="'+id+'">Reply</button></div>';
               }
               $('#comment-box').html(box);
               $('#totalComments').text(response.totalComments +' Comments');            
@@ -103,11 +105,21 @@
             btn.data('type','dislike');           
        }
     });
-    $(document).ready('click','#send-reply-btn',function(){
-        alert('hi');
-    });
 });
-   
+$(document).on('click','#send-reply-btn',function(){
+    var i = $(this).data('id');
+    var reply = $('#reply'+i).val();
+    var _token = '{{ csrf_token() }}';
+    $.ajax({
+        type:'POST',
+        url:"{{ route('posts.comment.reply') }}",
+        data:{commentId:i,reply:reply,_token:_token},
+        success:function(response) {
+        alert(response);         
+     }
+  });
+    
+});
 });
   </script>
 @endsection

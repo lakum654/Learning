@@ -136,4 +136,10 @@ class PostController extends Controller
             return $post->like;
         }
     }
+
+    public function addReply(Request $request){
+        $id = $request->commentId;
+        $reply = $request->reply;
+        return $reply;
+    }
 }

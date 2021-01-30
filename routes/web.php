@@ -27,5 +27,5 @@ Route::post('posts/favorite','PostController@addFavirote')->name('posts.favorite
 Route::post('posts/comment','PostController@addComment')->name('posts.comment');
 Route::post('posts/loadComment','PostController@loadComment')->name('posts.loadComment');
 Route::any('posts/addLike','PostController@addLike')->name('posts.like');
-
+Route::post('posts/comment/reply','PostController@addReply')->name('posts.comment.reply');
 
