@@ -44,4 +44,8 @@ class User extends Authenticatable
     public function myList(){
         return $this->belongsToMany(Post::class,'favorite_post');
     }
+
+    public function comments(){
+        return $this->hasMany(Comment::class);
+    }
 }

@@ -16,4 +16,8 @@ class Post extends Model
     public function users(){
         return $this->belongsToMany(User::class,'favorite_post');
     }
+
+    public function comments(){
+        return $this->hasMany(Comment::class)->orderBy('created_at','desc');
+    }
 }

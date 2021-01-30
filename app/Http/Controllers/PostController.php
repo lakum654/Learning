@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Post;
 use App\User;
-
+use App\Comment;
 class PostController extends Controller
 {
     /**
@@ -98,5 +98,13 @@ class PostController extends Controller
         $post = $request->postId;
         $user->myList()->attach($post);
         return 1;
+    }
+    public function addComment(Request $request){
+       $post = Post::find($request->postId);
+       $comment = new Comment;
+       $comment->user_id = Auth::user()->id;
+       $comment->comment = $request->comment;
+       $post->comments()->save($comment);
+      return response()->json(['comments'=>$post->comments]);
     }
 }

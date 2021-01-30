@@ -24,3 +24,4 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('posts', 'PostController');
 Route::post('posts/favorite','PostController@addFavirote')->name('posts.favorite');
+Route::post('posts/comment','PostController@addComment')->name('posts.comment');
