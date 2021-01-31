@@ -30,10 +30,21 @@
                     </div>
                     <div class="comment-text-sm"><span>{{ $comment->comment }}.</span></div>
                     <div class="reply-section">
-                        <div class="d-flex flex-row align-items-center voting-icons"><i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i><i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i><span class="ml-2">10</span><span class="dot ml-2"></span>
+                        <div class="d-flex flex-row align-items-center voting-icons"><i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>
+                        <i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i><span class="ml-2">{{ $comment->replies->count() }}</span><span class="dot ml-2"></span>
                               <h6 class="ml-2 mt-1"><a href="#" class="reply-link" class="nav-link" data-id="{{ $comment->id }}"> Reply </a></h6>
                         </div>
                          <div class="d-flex flex-row" id="reply-box{{ $comment->id }}">
+                        </div>
+                        <div class="reply-list">
+                          @foreach($comment->replies as $reply)
+                          <div class="commented-section mt-2">
+                          <div class="d-flex flex-row align-items-center commented-user">
+                          <h6 class="mr-2 text-danger">{{ $reply->user->name }}</h5><span class="dot mb-1"></span><span class="mb-1 ml-2">{{ $reply->created_at->diffForHumans() }}</span>
+                          </div>
+                           <div class="comment-text-sm text-info"><span>{{ $reply->reply}}</span></div>
+                         </div>
+                          @endforeach
                         </div>
                 </div>
               @endforeach               
@@ -59,7 +70,7 @@ $(document).ready(function(){
                   box += '<i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>';
                   box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
                   box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';
-                  box += '<h6 class="ml-2 mt-1" class="reply-btn">Reply</h6>';
+                  box += '<h6 class="ml-2 mt-1" class="reply-btn"><a href="#" class=".reply-link">Reply</a></h6>';
                   box += '</div></div></div><div class="d-flex flex-row"><input id="reply" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply">';
                   box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn">Reply</button>';
                   box +=  '</div>';  
@@ -74,23 +85,25 @@ $(document).ready(function(){
          }
        });
       });
-
+  var boxId = ''; 
   $(document).on('click','.reply-link',function(e){
     e.preventDefault();
-    var boxId = $(this).data('id');
+    boxId = $(this).data('id');
     $('#reply-box'+boxId).html('<input id="reply" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply"><button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn">Reply</button>');
   });
 
   $(document).on('click','#send-reply-btn',function(){
-    var reply = $('#reply').val();
+    var reply = $('#reply');
     var _token = '{{ csrf_token() }}';
+    var i = boxId;
+    $('#reply-box'+i).html('');
     $.ajax({
         type:'POST',
         url:"{{ route('posts.comment.reply') }}",
-        data:{commentId:i,reply:reply,_token:_token},
+        data:{commentId:i,reply:reply.val(),_token:_token},
         success:function(response) {
-        $('#reply'+i).val(''); 
-       // swal("Thank You!", "You clicked the button!", "success");      
+          $('#reply').val('');
+        swal("Thank You!", "You clicked the button!", "success");      
      }
   }); 
 });

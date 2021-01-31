@@ -100,11 +100,6 @@ class PostController extends Controller
                 'user' => $value->user->name,
                 'time' => $value->created_at->diffForHumans()
             ];
-
-            $comment = Comment::find($value->id);
-            $reply[$value->id][] = [
-                'reply' => 'Reply Hi'
-            ]; 
         }
         
 
@@ -128,7 +123,6 @@ class PostController extends Controller
         $reply = new Reply;
         $reply->user_id = Auth::user()->id;
         $reply->reply = $replyText;
-        $comment->replies()->save($reply);    
-        
+        $comment->replies()->save($reply);        
     }
 }
