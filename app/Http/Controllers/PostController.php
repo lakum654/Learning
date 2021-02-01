@@ -108,11 +108,7 @@ class PostController extends Controller
     }
     public function addLike(Request $request){
         $post = Post::find($request->postId);
-        if($request->actionType == 'like'){
-            $newLike = $post->like + 1;
-            $post->update(['like'=>$newLike]);
-            return $post->like;
-        }
+        $post->update(['like'=>$request->like]);
     }
 
     public function addReply(Request $request){

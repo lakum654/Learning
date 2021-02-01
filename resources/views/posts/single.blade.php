@@ -12,10 +12,11 @@
                     </div>
                     <div class="d-flex flex-row align-items-center align-content-center post-title">
                     <span class="mr-2 comments" id="totalComments"> comments&nbsp;</span>
-                    <a href="#" id="like-btn" data-type='like'><span class="mr-2 likes"><i class="" aria-hidden="true"></i></span></a>
-                    <span class="mr-2 likes" id="totalLikes">22 Likes</span><span class="mr-2 dot"></span>
+                    <a href="#" id="like-btn" data-type=''><span class="mr-2 likes"><i class="" aria-hidden="true"></i></span></a>
+                    <span class="mr-2 likes" id="totalLikes" data-likes="{{ $post->like }}">{{ $post->like }} Likes</span><span class="mr-2 dot"></span>
                     <span>{{ $post->created_at->diffForHumans() }}</span></div>
                 </div>
+        
             </div>
             <div class="coment-bottom bg-white p-2 px-4">
                 <div class="d-flex flex-row add-comment-section mt-4 mb-4"><img class="img-fluid img-responsive rounded-circle mr-2" src="https://i.imgur.com/qdiP4DB.jpg" width="38">
@@ -37,15 +38,19 @@
                          <div class="d-flex flex-row" id="reply-box{{ $comment->id }}">
                         </div>
                         <div class="reply-list">
+                          <div class="newReply{{ $comment->id }}">
+                          </div>
                           @foreach($comment->replies as $reply)
-                          <div class="commented-section mt-2">
+                          <div class="commented-section mt-2" style="font-size:10px">
                           <div class="d-flex flex-row align-items-center commented-user">
-                          <h6 class="mr-2 text-danger">{{ $reply->user->name }}</h5><span class="dot mb-1"></span><span class="mb-1 ml-2">{{ $reply->created_at->diffForHumans() }}</span>
+                          <h6 class="mr-2 text-danger">{{ $reply->user->name }}</h5><span class="dot mb-1"></span>
+                          <span class="mb-1 ml-2">{{ $reply->created_at->diffForHumans() }}</span>
                           </div>
                            <div class="comment-text-sm text-info"><span>{{ $reply->reply}}</span></div>
-                         </div>
-                          @endforeach
                         </div>
+                         <hr>
+                          @endforeach
+                        </>
                 </div>
               @endforeach               
         </div>
@@ -54,6 +59,8 @@
 @php $date = date('d-m-y') @endphp
 <script>
 $(document).ready(function(){ 
+ $('#like-btn').addClass('fa fa-thumbs-up');  
+ $('#like-btn').data('type','like');
  $('#comment-btn').click(function(e){
         e.preventDefault();
         var postId = $('#post_id').val();
@@ -69,10 +76,7 @@ $(document).ready(function(){
                   box += '<div class="d-flex flex-row align-items-center voting-icons">';
                   box += '<i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>';
                   box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
-                  box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';
-                  box += '<h6 class="ml-2 mt-1" class="reply-btn"><a href="#" class=".reply-link">Reply</a></h6>';
-                  box += '</div></div></div><div class="d-flex flex-row"><input id="reply" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply">';
-                  box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn">Reply</button>';
+                  box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';               
                   box +=  '</div>';  
         $.ajax({
           type:'POST',
@@ -81,7 +85,6 @@ $(document).ready(function(){
           success:function(response) {
           $('#comment').val('');
           $('.comment-box').prepend(box);
-            
          }
        });
       });
@@ -96,20 +99,55 @@ $(document).ready(function(){
     var reply = $('#reply');
     var _token = '{{ csrf_token() }}';
     var i = boxId;
-    $('#reply-box'+i).html('');
+   var newReply = '';
+   $('#reply-box'+i).html('');
+   newReply += '<div class="commented-section mt-2" style="font-size:10px">';
+   newReply += '<div class="d-flex flex-row align-items-center commented-user">';
+   newReply += '<h6 class="mr-2 text-danger">You</h5>';
+   newReply += '<span class="dot mb-1"></span>';
+   newReply += '<span class="mb-1 ml-2">Just Now</span></div>';
+   newReply += '<div class="comment-text-sm text-info"><span>'+reply.val()+'</span></div>';
     $.ajax({
         type:'POST',
         url:"{{ route('posts.comment.reply') }}",
         data:{commentId:i,reply:reply.val(),_token:_token},
         success:function(response) {
           $('#reply').val('');
-        swal("Thank You!", "You clicked the button!", "success");      
+          $('.newReply'+i).prepend(newReply);
+          swal("Thank You!", "You clicked the button!", "success");      
      }
   }); 
 });
 
+$('#like-btn').click(function(e){
+  var like = $('#totalLikes').data('likes');
+  e.preventDefault();
+  if($(this).data('type') == 'like'){
+    $(this).removeClass('fa fa-thumbs-up');
+    $(this).addClass('fa fa-thumbs-down');
+    $(this).data('type','dislike');
+    $('#totalLikes').data('likes',like+1);
+    $('#totalLikes').html(like+1+' Likes');
+  }else{
+    $(this).removeClass('fa fa-thumbs-down');
+    $(this).addClass('fa fa-thumbs-up');
+    $(this).data('type','like');
+    $('#totalLikes').data('likes',like-1);
+    $('#totalLikes').html(like-1 +' Likes');
+  } 
+  var likes = $('#totalLikes').data('likes'); 
+  var postId = $('#post_id').val();
+  var _token = '{{ csrf_token() }}';
+  var actionType = $(this).data('type');
+  $.ajax({
+    type:'POST',
+    url:"{{ route('posts.like') }}",
+    data:{postId:postId,like:likes,_token:_token},
+    success:function(response) {
+    swal("Thank You!", "You clicked the button!", "success");             
+ }
 });
-
-
+});
+});
     </script>
 @endsection
