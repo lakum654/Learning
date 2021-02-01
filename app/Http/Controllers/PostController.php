@@ -18,7 +18,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::get();
+        $posts = Post::where('user_id',Auth::user()->id)->get();
         return view('posts.index',compact('posts'));
     }
 
@@ -86,7 +86,7 @@ class PostController extends Controller
        $comment->user_id = Auth::user()->id;
        $comment->comment = $request->comment;
        $post->comments()->save($comment);
-      //return response()->json(['comments'=>$post->comments]);
+       return response()->json(['totalComments'=>$post->comments->count(),'lastId'=>$comment->id]);
     }
 
     public function loadComment(Request $request){
@@ -119,6 +119,19 @@ class PostController extends Controller
         $reply = new Reply;
         $reply->user_id = Auth::user()->id;
         $reply->reply = $replyText;
-        $comment->replies()->save($reply);        
+        $comment->replies()->save($reply);  
+        
+        return response()->json(['replyId'=>$reply->id]);
+          
     }
+
+    public function replyDelete(Request $request){
+        Reply::find($request->replyId)->delete();       
+    }
+
+    public function commentDelete(Request $request){
+        Comment::find($request->id)->delete();
+        return back();
+    }
+    
 }

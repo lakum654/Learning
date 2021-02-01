@@ -1,98 +1,84 @@
+@extends('layouts.app')
+
+@section('content')
+@php $favoriteList = Auth::user()->myList->pluck('id') @endphp   
+<div class="container"> 
+<div class="row">    
+@foreach($posts as $post)
+<div class="col-4">
+  <div class="card mt-2">
+    <div class="card-header bg-white font-weight-bold">{{ $post->title }}</div>
+    <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+      <img
+        src="https://mdbootstrap.com/img/new/standard/nature/112.jpg"
+        class="img-fluid"
+      />
+      <a href="#!">
+        <div class="mask" style="background-color: rgba(251, 251, 251, 0.15)"></div>
+      </a>
+    </div>
+    <div class="card-body">
+      <h5 class="card-title font-weight-bold">{{ $post->title }}</h5>
+      <p class="card-text">
+       {{ Str::limit($post->desc,50) }}
+      </p>
+      <a href="{{ route('posts.show',$post->id) }}" class="btn btn-primary btn-sm">Detail..</a>
+      <a href="#!" class="btn-link float-right favorite-btn {{ in_array($post->id,$favoriteList->toArray()) ? 'text-danger' : ''}}" data-id="{{ $post->id }}"><i class="fa fa-star"></i></a>
+    </div>
+  </div>
+</div>    
+@endforeach
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New Post</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ route('posts.store') }}" method="post">
+      <div class="modal-body">
+          @csrf
+          <div class="form-group">
+            <label for="title">Post Title:</label>
+            <input type="text" name="title" class="form-control form-control-sm" placeholder="Post Title" id="title">
+          </div>
+          <div class="form-group">
+            <label for="pwd">Post Description:</label>
+            <textarea class="form-control form-control-sm" name="desc" placeholder="Description.." id="desc"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Publish</button>
+      </div>
+    </form>
+    </div>
+  </div>
+</div>
 <script>
-    $(document).ready(function(){ 
-    $('#like-btn').addClass('fa fa-thumbs-up');
-     function loadComment(){
-        var postId = $('#post_id').val();
-        var _token = '{{ csrf_token() }}';
-        $.ajax({
-            type:'POST',
-            url:"{{ route('posts.loadComment') }}",
-            data:{postId:postId,_token:_token},
-            success:function(response) {
-              $('#comment').val('');
-              len = response['comments'].length;
-              var box = '';
-              for(var i=0; i<len; i++){
-                  var id = response['comments'][i]['id'];
-                  var comment = response['comments'][i]['comment'];
-                  var user = response['comments'][i]['user'];
-                  var time = response['comments'][i]['time'];
-                  box += '<div class="commented-section mt-2">';
-                  box += '<div class="d-flex flex-row align-items-center commented-user">';
-                  box += '<h5 class="mr-2">'+user+'</h5><span class="dot mb-1">';
-                  box += '</span><span class="mb-1 ml-2 time" data-time="2019-12-25 00:00:00">'+time+'</span>';
-                  box += '</div><div class="comment-text-sm"><span>'+comment+'</span></div>';
-                  box += '<div class="reply-section">';
-                  box += '<div class="d-flex flex-row align-items-center voting-icons">';
-                  box += '<i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>';
-                  box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
-                  box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';
-                  box += '<h6 class="ml-2 mt-1" class="reply-btn">Reply</h6>';
-                  box += '</div></div></div><div class="d-flex flex-row"><input id="reply'+id+'" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply">';
-                  box +=  '<button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn" data-id="'+id+'">Reply</button>';
-                  box +=  '</div>';
-                  box += '<div class="reply-section mt-2">';
-                 
-                  box += '</div>';
-            }
-              $('#comment-box').html(box);
-              $('#totalComments').text(response.totalComments +' Comments');            
-              $('#totalLikes').text(response.totalLikes +' Likes');            
-             // swal("Thank You!", "You clicked the button!", "success");
-            }
-         });
-     }  
-     loadComment();              
-      $('#comment-btn').click(function(e){
-        e.preventDefault();
-        var postId = $('#post_id').val();
-        var comment = $('#comment').val();
-        var _token = '{{ csrf_token() }}';
-        $.ajax({
-          type:'POST',
-          url:"{{ route('posts.comment') }}",
-          data:{postId:postId,comment:comment,_token:_token},
-          success:function(response) {
-         //   $('#comment').val('');
-            loadComment();
-           // $('#comment-box').html(box);            
-            swal("Thank You!", "You clicked the button!", "success");
-          }
-       });
-      });
-      
-      $('#like-btn').click(function(e){
-        e.preventDefault();
-        var btn = $(this);
-        btn.toggleClass('fa fa-thumbs-up');
-        var postId = $('#post_id').val();
-        var _token = '{{ csrf_token() }}';
-        var actionType = $(this).data('type');
-        $.ajax({
-          type:'POST',
-          url:"{{ route('posts.like') }}",
-          data:{postId:postId,actionType:actionType,_token:_token},
-          success:function(response) {
-            btn.addClass('fa fa-thumbs-down');
-            $('#totalLikes').text(response +' Liked');
-            btn.data('type','dislike');           
-       }
-    });
-});
-$(document).on('click','#send-reply-btn',function(){
-    var i = $(this).data('id');
-    var reply = $('#reply'+i).val();
-    var _token = '{{ csrf_token() }}';
-    $.ajax({
+  $(document).ready(function(){
+    $(document).on('click','.favorite-btn',function(e){
+      e.preventDefault();
+      var selectedClass = $(this);
+      var postId = $(this).data('id');
+      var _token = '{{ csrf_token() }}';
+      $.ajax({
         type:'POST',
-        url:"{{ route('posts.comment.reply') }}",
-        data:{commentId:i,reply:reply,_token:_token},
-        success:function(response) {
-        $('#reply'+i).val(''); 
-       // swal("Thank You!", "You clicked the button!", "success");      
-     }
+        url:"{{ route('posts.favorite') }}",
+        data:{postId:postId,_token:_token},
+        success:function(data) {
+           if(data == 1){
+            selectedClass.addClass('text-danger'); 
+           }
+        }
+     });
+    });
   });
-    
-});
-});
-  </script>
+</script>
+@endsection

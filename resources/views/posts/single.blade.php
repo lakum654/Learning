@@ -11,7 +11,7 @@
                         <h5>{{ $post->user->name }}</h5><span class="ml-2">(Jesshead)</span>
                     </div>
                     <div class="d-flex flex-row align-items-center align-content-center post-title">
-                    <span class="mr-2 comments" id="totalComments"> comments&nbsp;</span>
+                    <span class="mr-2 comments" id="totalComments">{{ $post->comments->count() }} comments&nbsp;</span>
                     <a href="#" id="like-btn" data-type=''><span class="mr-2 likes"><i class="" aria-hidden="true"></i></span></a>
                     <span class="mr-2 likes" id="totalLikes" data-likes="{{ $post->like }}">{{ $post->like }} Likes</span><span class="mr-2 dot"></span>
                     <span>{{ $post->created_at->diffForHumans() }}</span></div>
@@ -28,6 +28,7 @@
                     <div class="commented-section mt-2">
                     <div class="d-flex flex-row align-items-center commented-user">
                         <h5 class="mr-2">{{ $comment->user->name }}</h5><span class="dot mb-1"></span><span class="mb-1 ml-2">{{ $comment->created_at->diffForHumans() }}</span>
+                        <span><a href="{{ url('post/comment/remove/'.$comment->id) }}" class="ml-2">{{  Auth::user()->id == $comment->user_id ? ' Remove' : ''}}</a></a></span>
                     </div>
                     <div class="comment-text-sm"><span>{{ $comment->comment }}.</span></div>
                     <div class="reply-section">
@@ -37,18 +38,18 @@
                         </div>
                          <div class="d-flex flex-row" id="reply-box{{ $comment->id }}">
                         </div>
-                        <div class="reply-list">
+                        <div class="reply-list ml-5" style="width:250px;">
                           <div class="newReply{{ $comment->id }}">
                           </div>
                           @foreach($comment->replies as $reply)
-                          <div class="commented-section mt-2" style="font-size:10px">
+                          <div class="commented-section mt-2 bg-light rounded" style="font-size:10px" id="replybox{{ $reply->id }}">
                           <div class="d-flex flex-row align-items-center commented-user">
-                          <h6 class="mr-2 text-danger">{{ $reply->user->name }}</h5><span class="dot mb-1"></span>
-                          <span class="mb-1 ml-2">{{ $reply->created_at->diffForHumans() }}</span>
+                          <b class="m-1 text-danger">{{ $reply->user->name }}</b><span class="dot mb-1"></span>
+                          <span class="mb-1 ml-2">{{ $reply->created_at->diffForHumans() }}</span><span>  
+                            <a href="#" class="text-decoration-none ml-2 reply-remove-btn" data-id="{{ $reply->id }}">{{ Auth::user()->id == $reply->user_id ? 'Remove' : ''}}</a></span>
                           </div>
-                           <div class="comment-text-sm text-info"><span>{{ $reply->reply}}</span></div>
+                           <div class="comment-text-sm text-info ml-3"><span>{{ $reply->reply}}</span></div>
                         </div>
-                         <hr>
                           @endforeach
                         </>
                 </div>
@@ -66,25 +67,30 @@ $(document).ready(function(){
         var postId = $('#post_id').val();
         var comment = $('#comment').val();
         var _token = '{{ csrf_token() }}';
-          var box = '';
-           box += '<div class="commented-section mt-2">';
-                  box += '<div class="d-flex flex-row align-items-center commented-user">';
-                  box += '<h5 class="mr-2">{{ Auth::user()->name  ? 'You' : ''}}</h5><span class="dot mb-1">';
-                  box += '</span><span class="mb-1 ml-2 time">Just Now</span>';
-                  box += '</div><div class="comment-text-sm"><span>'+comment+'</span></div>';
-                  box += '<div class="reply-section">';
-                  box += '<div class="d-flex flex-row align-items-center voting-icons">';
-                  box += '<i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>';
-                  box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
-                  box += '<span class="ml-2">15</span><span class="dot ml-2"></span>';               
-                  box +=  '</div>';  
+          var box = '';                 
         $.ajax({
           type:'POST',
           url:"{{ route('posts.comment') }}",
           data:{postId:postId,comment:comment,_token:_token},
           success:function(response) {
           $('#comment').val('');
-          $('.comment-box').prepend(box);
+          $('#totalComments').text(response.totalComments+' comments');
+
+          box += '<div class="commented-section mt-2">';
+            box += '<div class="d-flex flex-row align-items-center commented-user">';
+            box += '<h5 class="">{{ Auth::user()->name  ? 'You' : ''}}</h5><span class="dot mb-1">';
+            box += '</span><span class="mb-1 ml-2 time">Just Now</span>';
+            box += '</div><div class="comment-text-sm"><span>'+comment+'</span></div>';
+            box += '<div class="reply-section">';
+            box += '<div class="d-flex flex-row align-items-center voting-icons">';
+            box += '<i class="fa fa-sort-up fa-2x mt-3 hit-voting"></i>';
+            box += '<i class="fa fa-sort-down fa-2x mb-3 hit-voting"></i>';
+            box += '<span class="ml-2">1</span><span class="dot ml-2"></span>';
+            box += '<h6 class="ml-2 mt-1"><a href="#" class="reply-link" class="nav-link" data-id="'+response.lastId+'"> Reply </a></h6></div>';              
+            box += '<div class="d-flex flex-row reply-box" id="reply-box'+response.lastId+'">';  
+            box +=  '</div><div class="ml-5 newReply'+response.lastId+'" style="width:250px;"></div>';
+
+            $('.comment-box').prepend(box);
          }
        });
       });
@@ -95,24 +101,30 @@ $(document).ready(function(){
     $('#reply-box'+boxId).html('<input id="reply" type="text" class="form-control form-control-sm w-50 reply-text" placeholder="Add Reply"><button class="btn btn-primary btn-sm ml-2 send-reply-btn" type="button" id="send-reply-btn">Reply</button>');
   });
 
+  
+
   $(document).on('click','#send-reply-btn',function(){
     var reply = $('#reply');
     var _token = '{{ csrf_token() }}';
     var i = boxId;
    var newReply = '';
    $('#reply-box'+i).html('');
-   newReply += '<div class="commented-section mt-2" style="font-size:10px">';
-   newReply += '<div class="d-flex flex-row align-items-center commented-user">';
-   newReply += '<h6 class="mr-2 text-danger">You</h5>';
-   newReply += '<span class="dot mb-1"></span>';
-   newReply += '<span class="mb-1 ml-2">Just Now</span></div>';
-   newReply += '<div class="comment-text-sm text-info"><span>'+reply.val()+'</span></div>';
+  
     $.ajax({
         type:'POST',
         url:"{{ route('posts.comment.reply') }}",
         data:{commentId:i,reply:reply.val(),_token:_token},
         success:function(response) {
           $('#reply').val('');
+
+          newReply += '<div class="commented-section mt-2 bg-light rounded" style="font-size:10px" id="replybox'+response.replyId+'">';
+            newReply += '<div class="d-flex flex-row align-items-center commented-user">';
+            newReply += '<h6 class="m-2 text-danger">You</h5>';
+            newReply += '<span class="dot mb-1"></span>';
+            newReply += '<span class="mb-1 ml-2">Just Now</span>';
+            newReply += '<a href="#" class="text-decoration-none ml-2 new-reply-remove-btn" data-id="'+response.replyId+'">Remove</a>';
+            newReply += '</div><div class="comment-text-sm text-info ml-3"><span>'+reply.val()+'</span></div>';
+            
           $('.newReply'+i).prepend(newReply);
           swal("Thank You!", "You clicked the button!", "success");      
      }
@@ -147,6 +159,34 @@ $('#like-btn').click(function(e){
     swal("Thank You!", "You clicked the button!", "success");             
  }
 });
+});
+
+$(document).on('click','.reply-remove-btn',function(e){
+    e.preventDefault();
+    var id = $(this).data('id');
+    var _token = '{{ csrf_token() }}';
+    $.ajax({
+      type:'POST',
+      url:"{{ route('posts.reply.delete') }}",
+      data:{replyId:id,_token:_token},
+      success:function(response) {
+      $('#replybox'+id).hide();
+   }
+  });   
+});
+
+$(document).on('click','.new-reply-remove-btn',function(e){
+  e.preventDefault();
+  var id = $(this).data('id');
+  var _token = '{{ csrf_token() }}';
+  $.ajax({
+    type:'POST',
+    url:"{{ route('posts.reply.delete') }}",
+    data:{replyId:id,_token:_token},
+    success:function(response) {
+    $('#replybox'+id).hide();
+ }
+});   
 });
 });
     </script>

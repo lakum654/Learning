@@ -70,10 +70,13 @@
                                     </form>
                                 </div>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="modal" data-target="#exampleModal">{{ __('Add New') }}</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('posts.index') }}">{{ __('My Posts') }}</a>
+                            </li>
                         @endguest
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" data-toggle="modal" data-target="#exampleModal">{{ __('Add New') }}</a>
-                        </li>
                     </ul>
                 </div>
             </div>

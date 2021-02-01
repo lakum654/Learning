@@ -29,3 +29,5 @@ Route::post('posts/loadComment','PostController@loadComment')->name('posts.loadC
 Route::any('posts/addLike','PostController@addLike')->name('posts.like');
 Route::any('posts/comment/reply','PostController@addReply')->name('posts.comment.reply');
 
+Route::any('post/reply/remove','PostController@replyDelete')->name('posts.reply.delete');
+Route::any('post/comment/remove/{id}','PostController@commentDelete')->name('posts.comment.delete');
