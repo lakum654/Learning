@@ -28,7 +28,7 @@
                     <div class="commented-section mt-2">
                     <div class="d-flex flex-row align-items-center commented-user">
                         <h5 class="mr-2">{{ $comment->user->name }}</h5><span class="dot mb-1"></span><span class="mb-1 ml-2">{{ $comment->created_at->diffForHumans() }}</span>
-                        <span><a href="{{ url('post/comment/remove/'.$comment->id) }}" class="ml-2">{{  Auth::user()->id == $comment->user_id ? ' Remove' : ''}}</a></a></span>
+                        <span><a href="{{ url('post/comment/remove/'.$comment->id) }}" class="ml-2">{{  Auth::user()->id == $comment->user_id ? ' Remove' : ''}}</a></span>
                     </div>
                     <div class="comment-text-sm"><span>{{ $comment->comment }}.</span></div>
                     <div class="reply-section">
@@ -80,6 +80,7 @@ $(document).ready(function(){
             box += '<div class="d-flex flex-row align-items-center commented-user">';
             box += '<h5 class="">{{ Auth::user()->name  ? 'You' : ''}}</h5><span class="dot mb-1">';
             box += '</span><span class="mb-1 ml-2 time">Just Now</span>';
+            box += '<span><a href="{{ url("post/comment/remove") }}/'+response.lastId+'" class="ml-2">{{  Auth::user()->id == $comment->user_id ? "Remove" : ""}}</a></span>';
             box += '</div><div class="comment-text-sm"><span>'+comment+'</span></div>';
             box += '<div class="reply-section">';
             box += '<div class="d-flex flex-row align-items-center voting-icons">';
