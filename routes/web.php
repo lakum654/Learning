@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+Route::get('softdelete',function(){
+	App\Post::find(3)->delete();
+	// return App\Post::withTrashed()->get();
+});
 Route::get('/', function () {
     return view('welcome');
 });
